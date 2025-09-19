@@ -1,6 +1,6 @@
 # FundMe – Sepolia Deployment & Verification
 
-This branch configures FundMe for network-aware deployments and Etherscan verification, with:
+This main branch configures FundMe for network-aware deployments and Etherscan verification, with:
 - Local networks (hardhat/localhost): deploy a MockV3Aggregator and inject it into FundMe.
 - Sepolia: use Chainlink’s ETH/USD feed at 0x694AA1769357215DE4FAC081bf1f309aDC325306 and verify on Etherscan.
 
