@@ -1,4 +1,4 @@
-const {buildModule} = require("nomicfoundation/hardhat-ignition/modules");
+const {buildModule} = require("@nomicfoundation/hardhat-ignition/modules");
 
 module.exports = buildModule("MockV3AggregatorModule",(m)=>{
     const DECIMALS = m.getParameter("decimals",8);

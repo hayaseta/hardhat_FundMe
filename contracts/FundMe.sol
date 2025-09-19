@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.28;
+import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import "./PriceConverter.sol";
 
 contract FundMe {
   using PriceConverter for uint256;
+  AggregatorV3Interface public s_priceFeed;
+
 
   address public owner;
   address []public funders;
@@ -11,12 +14,13 @@ contract FundMe {
 
   uint256 minimumUsd = 1 * 1e18;
 
-  constructor() {
+  constructor(AggregatorV3Interface priceFeed) {
     owner = msg.sender;
+    s_priceFeed = priceFeed;
   }
 
   function fund() public payable{
-    require(msg.value.getConversionRate() >= minimumUsd, "Not enough ETH sent!");
+    require(msg.value.getConversionRate(s_priceFeed) >= minimumUsd, "Not enough ETH sent!");
     funders.push(msg.sender);
     addressToAmountFunded[msg.sender] = msg.value;
   }

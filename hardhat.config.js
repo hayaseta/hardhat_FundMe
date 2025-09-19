@@ -1,11 +1,18 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-ignition");
 require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "https://eth-sepolia/example";
 const PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY || "0xkey";
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "Your etherscan API key";
 module.exports = {
   defaultNetwork: "hardhat",
+  etherscan:{
+    apiKey:{
+      sepolia: ETHERSCAN_API_KEY
+    }
+  },
   networks: {
     hardhat: {
       chainId: 31337,
