@@ -1,6 +1,7 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomicfoundation/hardhat-ignition");
 require("dotenv").config();
+require("solidity-coverage")
 
 /** @type import('hardhat/config').HardhatUserConfig */
 const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL || "https://eth-sepolia/example";
