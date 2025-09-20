@@ -22,7 +22,7 @@ contract FundMe {
   function fund() public payable{
     require(msg.value.getConversionRate(s_priceFeed) >= minimumUsd, "Not enough ETH sent!");
     funders.push(msg.sender);
-    addressToAmountFunded[msg.sender] = msg.value;
+    addressToAmountFunded[msg.sender] += msg.value;
   }
 
   function withdraw() public onlyOwner {
