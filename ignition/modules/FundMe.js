@@ -25,3 +25,7 @@ module.exports = buildModule("FundMeModuleV2", (m) => {//Used V2 to avoid cachin
     
 });
 
+// Wipe Ignition state for Sepolia (only if you’re OK losing history and addresses)
+// rm -rf ignition/deployments/chain-11155111
+// Redeploy.
+
