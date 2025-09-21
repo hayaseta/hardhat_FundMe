@@ -1,138 +1,132 @@
-# FundMe – Sepolia Deployment & Verification
+# FundMe – Network-aware deployment, tests, coverage, and verification
 
-This main branch configures FundMe for network-aware deployments and Etherscan verification, with:
-- Local networks (hardhat/localhost): deploy a MockV3Aggregator and inject it into FundMe.
-- Sepolia: use Chainlink’s ETH/USD feed at 0x694AA1769357215DE4FAC081bf1f309aDC325306 and verify on Etherscan.
+This repo deploys FundMe with environment-aware config and full test/coverage support:
+- Local (hardhat/localhost): deploys a Chainlink MockV3Aggregator and injects it into FundMe.
+- Sepolia: uses Chainlink’s ETH/USD feed at 0x694AA1769357215DE4FAC081bf1f309aDC325306.
 
-## Contracts Overview
+Contracts use Solidity 0.8.28 (also compiles 0.8.0 for Chainlink mocks). Gas reporter and solidity-coverage are enabled.
+
+## Contracts
 
 - contracts/FundMe.sol
-  - Takes an AggregatorV3Interface in the constructor and stores it as s_priceFeed.
-  - Uses PriceConverter to enforce a minimum USD value per fund (minimumUsd = 1e18).
-  - Owner-only withdraw.
+  - Constructor takes an AggregatorV3Interface and stores it as s_priceFeed.
+  - Uses PriceConverter to require a minimumUsd = 1e18 (1 USD, 18 decimals).
+  - Owner-only withdraw; receive/fallback forward to fund().
 
 - contracts/PriceConverter.sol
-  - Library used by FundMe to convert ETH to USD via the supplied price feed.
+  - latestRoundData() returns an 8-decimal price; library scales by 1e10 to 18 decimals.
+  - getConversionRate(ethAmount) returns ETH amount in USD (18 decimals).
 
 - contracts/mocks/MockV3Aggregator.sol
-  - Used for local testing with DECIMALS=8 and INITIAL_ANSWER=2000.00000000.
+  - Local testing mock. Decimals = 8, initial answer = 2000e8.
 
-## Ignition Module (network-aware)
+## Ignition (network-aware)
 
 - ignition/modules/FundMe.js (module id: FundMeModuleV2)
-  - Local: deploys MockV3Aggregator then FundMe(mockAddress).
-  - Sepolia: deploys FundMe with the real price feed address.
-
-Key excerpt:
-```js
-const SEPOLIA_FEED = "0x694AA1769357215DE4FAC081bf1f309aDC325306";
-module.exports = buildModule("FundMeModuleV2", (m) => {
-  const isLocal = network.name === "hardhat" || network.name === "localhost";
-  if (isLocal) {
-    const mock = m.contract("MockV3Aggregator", [8, 2000n * 10n ** 8n]);
-    const fundMe = m.contract("FundMe", [mock]);
-    return { mock, fundMe };
-  }
-  const fundMe = m.contract("FundMe", [SEPOLIA_FEED]);
-  return { fundMe };
-});
-```
+  - Local: deploys MockV3Aggregator(8, 2000e8) then FundMe(mock).
+  - Sepolia (chainId 11155111): deploys FundMe with the real price feed address.
 
 ## Prerequisites
 
 - Node.js and npm
-- Hardhat + plugins installed
-- .env with:
+- .env (not committed) with:
   - SEPOLIA_RPC_URL
-  - PRIVATE_KEY (with Sepolia ETH)
+  - SEPOLIA_PRIVATE_KEY (has Sepolia ETH)
   - ETHERSCAN_API_KEY
 
-Hardhat config includes the verify plugin:
-```js
-require("@nomicfoundation/hardhat-verify");
-require("dotenv").config();
-module.exports = {
-  etherscan: { apiKey: { sepolia: process.env.ETHERSCAN_API_KEY } },
-  // ...networks, solidity, etc.
-};
+Hardhat plugins: @nomicfoundation/hardhat-toolbox, ignition, gas-reporter, solidity-coverage.
+
+## Install
+
+```bash
+npm install
 ```
+
+## Local development
+
+```bash
+# Run unit tests
+npx hardhat test
+
+# Start a node and deploy locally with Ignition
+npx hardhat node
+npx hardhat ignition deploy ignition/modules/FundMe.js --network localhost
+```
+
+## Test suites
+
+- Unit tests (local, with mock):
+  - tests/unit/FundMe.test.js
+  - Run: npx hardhat test tests/unit/FundMe.test.js
+
+- Staging tests (live Sepolia):
+  - tests/staging/FundMe.staging.test.js
+  - Skips automatically unless --network sepolia is used.
+  - Uses FUNDME_ADDRESS if set, otherwise reads ignition/deployments/chain-11155111/deployed_addresses.json.
+  - Run:
+    ```bash
+    # optionally set your deployed address
+    export FUNDME_ADDRESS=0xYourFundMeAddress
+    npx hardhat test tests/staging/FundMe.staging.test.js --network sepolia
+    ```
+
+## Coverage and gas report
+
+```bash
+# Coverage (outputs coverage/coverage-final.json and summary)
+npx hardhat coverage
+
+# Gas report (writes gas-report.txt)
+npx hardhat test
+```
+
+gas-report.txt is generated with usd currency display and token=MATIC setting.
 
 ## Deploy to Sepolia
 
-Command used:
 ```bash
 npx hardhat ignition deploy ignition/modules/FundMe.js --network sepolia
 ```
 
-Result:
-- FundMe deployed at: 0x5C50e0f4C1916e01c57FDBaDbDBCA4C5b8ab7540
-- Constructor arg (price feed): 0x694AA1769357215DE4FAC081bf1f309aDC325306
+Latest recorded deployment (from ignition/deployments/chain-11155111/deployed_addresses.json):
+- FundMeModuleV2#FundMe: 0xYourFundMeAddress
 
-You can always find addresses after deployment here:
-- ignition/deployments/chain-11155111/deployed_addresses.json
+Always prefer checking the file for the address you just deployed.
+
+If Ignition complains about changed artifacts, either bump the module id or clear the network’s ignition state:
+```bash
+rm -rf ignition/deployments/chain-11155111
+```
 
 ## Verify on Etherscan
 
-Command used:
+The verify task is available via @nomicfoundation/hardhat-toolbox.
+
 ```bash
-npx hardhat verify --network sepolia 0x5C50e0f4C1916e01c57FDBaDbDBCA4C5b8ab7540 0x694AA1769357215DE4FAC081bf1f309aDC325306
+# Replace with your deployed address if different
+npx hardhat verify --network sepolia 
+0xYourFundMeAddress 0x694AA1769357215DE4FAC081bf1f309aDC325306
 ```
 
-What verification does:
-- Recompiles your sources with the same compiler/settings and constructor args.
-- Confirms the bytecode matches the on-chain contract.
-- Publishes source and ABI to the explorer.
+Constructor arg is the Chainlink ETH/USD feed on Sepolia.
 
 ## Interact (examples)
 
-- Read the configured price feed:
-```solidity
-// at 0x5C50e0f4C1916e01c57FDBaDbDBCA4C5b8ab7540
-function s_priceFeed() external view returns (address)
-```
-
-- Fund the contract (Sepolia):
 ```bash
-# Using Hardhat console
 npx hardhat console --network sepolia
-> const c = await ethers.getContractAt("FundMe", "0x5C50e0f4C1916e01c57FDBaDbDBCA4C5b8ab7540");
-> (await c.s_priceFeed())
+
+> const c = await ethers.getContractAt("FundMe", "0xYourFundMeAddress")
+> await c.s_priceFeed()
 '0x694AA1769357215DE4FAC081bf1f309aDC325306'
-> await c.fund({ value: ethers.parseEther("0.01") })
+> await c.fund({ value: ethers.parseEther("0.001") })
+> await c.withdraw() // only owner
 ```
 
-- Withdraw (owner only):
-```bash
-> await c.withdraw()
-```
+## Notes
 
-## Local Development
-
-- Start a local node and deploy:
-```bash
-npx hardhat node
-npx hardhat ignition deploy ignition/modules/FundMe.js --network localhost
-```
-This will deploy MockV3Aggregator (8 decimals, 2000e8) and then FundMe(mock).
-
-## Troubleshooting
-
-- Ignition reconciliation (“Artifact bytecodes have been changed”):
-  - Update the module id (e.g., FundMeModuleV2) or remove ignition/deployments/chain-11155111 and redeploy.
-
-- “Cannot verify contracts for nonexistant deployment”:
-  - Ensure you deployed on the same network and module path before running verify.
-  - If needed, verify directly with: hardhat verify --network sepolia <ADDRESS> <CONSTRUCTOR_ARGS...>
-
-- CLI gotcha:
-  - Keep flags on one line; don’t split commands across lines.
-
-## Project Structure (key files)
-
-- contracts/FundMe.sol
-- contracts/PriceConverter.sol
-- contracts/mocks/MockV3Aggregator.sol
-- ignition/modules/FundMe.js
-- hardhat.config.js
+- Minimum funding is enforced in USD (1e18 = $1.00 with 18 decimals).
+- Do not commit .env. Rotate keys if a secret was exposed.
+- Staging test asserts the live Chainlink feed address on Sepolia.
+- Solidity compilers: 0.8.28 (primary), 0.8.0 (for Chainlink interface compatibility).
 
 SPDX-License-Identifier: SEE LICENSE IN LICENSE
