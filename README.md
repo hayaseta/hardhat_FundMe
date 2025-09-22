@@ -39,22 +39,16 @@ Notes:
 - Always specify the network to match where you deployed.
 
 Show info:
-- npx hardhat run scripts/Fund.js --network hardhat info
-- npx hardhat run scripts/Fund.js --network localhost info
-- npx hardhat run scripts/Fund.js --network sepolia info
+- ACTION=info npx hardhat run scripts/Fund.js --network <NETWORK>
 
 Fund (examples):
-- npx hardhat run scripts/Fund.js --network hardhat fund 0.001
-- npx hardhat run scripts/Fund.js --network sepolia fund 0.005
-Or with env:
-- ACTION=fund AMOUNT=0.001 npx hardhat run scripts/Fund.js --network hardhat
+- ACTION=fund AMOUNT=<AMOUNT> npx hardhat run scripts/Fund.js --network <NETWORK>
 
 Withdraw (owner only):
-- npx hardhat run scripts/Fund.js --network hardhat withdraw
-- npx hardhat run scripts/Fund.js --network sepolia withdraw
+ACTION=withdraw npx hardhat run scripts/Fund.js --network <NETWORK>
 
 List funders:
-- npx hardhat run scripts/Fund.js --network hardhat funders
+ACTION=funders npx hardhat run scripts/Fund.js --network <NETWORK>
 
 Example output (info):
 Network: hardhat (chainId: 31337)
