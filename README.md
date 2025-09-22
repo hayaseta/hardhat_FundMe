@@ -1,132 +1,152 @@
-# FundMe – Network-aware deployment, tests, coverage, and verification
+# FundMe (Hardhat + Chainlink)
 
-This repo deploys FundMe with environment-aware config and full test/coverage support:
-- Local (hardhat/localhost): deploys a Chainlink MockV3Aggregator and injects it into FundMe.
-- Sepolia: uses Chainlink’s ETH/USD feed at 0x694AA1769357215DE4FAC081bf1f309aDC325306.
+A minimal crowdfunding contract using Chainlink price feeds to enforce a USD-denominated minimum.
 
-Contracts use Solidity 0.8.28 (also compiles 0.8.0 for Chainlink mocks). Gas reporter and solidity-coverage are enabled.
+- Solidity: 0.8.28
+- Deployments: Hardhat Ignition
+- Tests: Mocha/Chai
+- Networks: hardhat, sepolia
 
-## Contracts
+## Setup
 
-- contracts/FundMe.sol
-  - Constructor takes an AggregatorV3Interface and stores it as s_priceFeed.
-  - Uses PriceConverter to require a minimumUsd = 1e18 (1 USD, 18 decimals).
-  - Owner-only withdraw; receive/fallback forward to fund().
+- Node.js LTS
+- Install deps
+  - npm install
+- Configure .env (never commit secrets)
+  - SEPOLIA_RPC_URL, SEPOLIA_PRIVATE_KEY, ETHERSCAN_API_KEY
 
-- contracts/PriceConverter.sol
-  - latestRoundData() returns an 8-decimal price; library scales by 1e10 to 18 decimals.
-  - getConversionRate(ethAmount) returns ETH amount in USD (18 decimals).
+## Deploy
 
-- contracts/mocks/MockV3Aggregator.sol
-  - Local testing mock. Decimals = 8, initial answer = 2000e8.
+Local (hardhat in-process):
+- npx hardhat ignition deploy ignition/modules/FundMe.js --network hardhat
 
-## Ignition (network-aware)
+Local (persistent localhost):
+- Terminal 1: npx hardhat node
+- Terminal 2: npx hardhat ignition deploy ignition/modules/FundMe.js --network localhost
 
-- ignition/modules/FundMe.js (module id: FundMeModuleV2)
-  - Local: deploys MockV3Aggregator(8, 2000e8) then FundMe(mock).
-  - Sepolia (chainId 11155111): deploys FundMe with the real price feed address.
+Sepolia:
+- Ensure .env is set
+- npx hardhat ignition deploy ignition/modules/FundMe.js --network sepolia
 
-## Prerequisites
+Ignition stores addresses under ignition/deployments/chain-<chainId>/deployed_addresses.json (31337 for local, 11155111 for sepolia).
 
-- Node.js and npm
-- .env (not committed) with:
-  - SEPOLIA_RPC_URL
-  - SEPOLIA_PRIVATE_KEY (has Sepolia ETH)
-  - ETHERSCAN_API_KEY
+## Interactions
 
-Hardhat plugins: @nomicfoundation/hardhat-toolbox, ignition, gas-reporter, solidity-coverage.
+Use scripts/Fund.js to query and interact with the deployed contract. The script auto-resolves the FundMe address from Ignition’s deployed_addresses.json for the current network.
 
-## Install
+Notes:
+- Minimum contribution is 1 USD worth of ETH (uses Chainlink feed).
+- Always specify the network to match where you deployed.
 
-```bash
-npm install
-```
+Show info:
+- npx hardhat run scripts/Fund.js --network hardhat info
+- npx hardhat run scripts/Fund.js --network localhost info
+- npx hardhat run scripts/Fund.js --network sepolia info
 
-## Local development
+Fund (examples):
+- npx hardhat run scripts/Fund.js --network hardhat fund 0.001
+- npx hardhat run scripts/Fund.js --network sepolia fund 0.005
+Or with env:
+- ACTION=fund AMOUNT=0.001 npx hardhat run scripts/Fund.js --network hardhat
 
-```bash
-# Run unit tests
-npx hardhat test
+Withdraw (owner only):
+- npx hardhat run scripts/Fund.js --network hardhat withdraw
+- npx hardhat run scripts/Fund.js --network sepolia withdraw
 
-# Start a node and deploy locally with Ignition
-npx hardhat node
-npx hardhat ignition deploy ignition/modules/FundMe.js --network localhost
-```
+List funders:
+- npx hardhat run scripts/Fund.js --network hardhat funders
 
-## Test suites
+Example output (info):
+Network: hardhat (chainId: 31337)
+Signer: 0x...
+FundMe address: 0xe7f1...
+Owner: 0x...
+Price Feed: 0x...
+Contract Balance: 0.002 ETH
+My Funded Amount: 0.001 ETH
 
-- Unit tests (local, with mock):
-  - tests/unit/FundMe.test.js
-  - Run: npx hardhat test tests/unit/FundMe.test.js
+Troubleshooting:
+- “No deployed addresses found…”: Deploy with Ignition for that network first.
+- “FundMe address not found…”: Ensure you used ignition/modules/FundMe.js and the resulting file contains FundMeModuleV2#FundMe.
 
-- Staging tests (live Sepolia):
-  - tests/staging/FundMe.staging.test.js
-  - Skips automatically unless --network sepolia is used.
-  - Uses FUNDME_ADDRESS if set, otherwise reads ignition/deployments/chain-11155111/deployed_addresses.json.
-  - Run:
-    ```bash
-    # optionally set your deployed address
-    export FUNDME_ADDRESS=0xYourFundMeAddress
-    npx hardhat test tests/staging/FundMe.staging.test.js --network sepolia
-    ```
+## Tests
 
-## Coverage and gas report
+- Unit (local): npx hardhat test
+- Coverage: npx hardhat coverage
+- Gas report: generated to gas-report.txt
+- Staging (Sepolia, optional): set .env and run tests with --network sepolia or run the staging spec directly after deployment.
 
-```bash
-# Coverage (outputs coverage/coverage-final.json and summary)
-npx hardhat coverage
+```// filepath: /home/sovan/fundme_yt/README.md
+# FundMe (Hardhat + Chainlink)
 
-# Gas report (writes gas-report.txt)
-npx hardhat test
-```
+A minimal crowdfunding contract using Chainlink price feeds to enforce a USD-denominated minimum.
 
-gas-report.txt is generated with usd currency display and token=MATIC setting.
+- Solidity: 0.8.28
+- Deployments: Hardhat Ignition
+- Tests: Mocha/Chai
+- Networks: hardhat, sepolia
 
-## Deploy to Sepolia
+## Setup
 
-```bash
-npx hardhat ignition deploy ignition/modules/FundMe.js --network sepolia
-```
+- Node.js LTS
+- Install deps
+  - npm install
+- Configure .env (never commit secrets)
+  - SEPOLIA_RPC_URL, SEPOLIA_PRIVATE_KEY, ETHERSCAN_API_KEY
 
-Latest recorded deployment (from ignition/deployments/chain-11155111/deployed_addresses.json):
-- FundMeModuleV2#FundMe: 0xYourFundMeAddress
+## Deploy
 
-Always prefer checking the file for the address you just deployed.
+Local (hardhat in-process):
+- npx hardhat ignition deploy ignition/modules/FundMe.js --network hardhat
 
-If Ignition complains about changed artifacts, either bump the module id or clear the network’s ignition state:
-```bash
-rm -rf ignition/deployments/chain-11155111
-```
+Local (persistent localhost):
+- Terminal 1: npx hardhat node
+- Terminal 2: npx hardhat ignition deploy ignition/modules/FundMe.js --network localhost
 
-## Verify on Etherscan
+Sepolia:
+- Ensure .env is set
+- npx hardhat ignition deploy ignition/modules/FundMe.js --network sepolia
 
-The verify task is available via @nomicfoundation/hardhat-toolbox.
+Ignition stores addresses under ignition/deployments/chain-<chainId>/deployed_addresses.json (31337 for local, 11155111 for sepolia).
 
-```bash
-# Replace with your deployed address if different
-npx hardhat verify --network sepolia 
-0xYourFundMeAddress 0x694AA1769357215DE4FAC081bf1f309aDC325306
-```
+## Interactions
 
-Constructor arg is the Chainlink ETH/USD feed on Sepolia.
+Use scripts/Fund.js to query and interact with the deployed contract. The script auto-resolves the FundMe address from Ignition’s deployed_addresses.json for the current network.
 
-## Interact (examples)
+Notes:
+- Minimum contribution is 1 USD worth of ETH (uses Chainlink feed).
+- Always specify the network to match where you deployed.
 
-```bash
-npx hardhat console --network sepolia
+Show info:
+- ACTION=info npx hardhat run scripts/Fund.js --network <NETWORK>
 
-> const c = await ethers.getContractAt("FundMe", "0xYourFundMeAddress")
-> await c.s_priceFeed()
-'0x694AA1769357215DE4FAC081bf1f309aDC325306'
-> await c.fund({ value: ethers.parseEther("0.001") })
-> await c.withdraw() // only owner
-```
 
-## Notes
+Fund (examples):
+- ACTION=fund AMOUNT=0.001 npx hardhat run scripts/Fund.js --network <NETWORK>
 
-- Minimum funding is enforced in USD (1e18 = $1.00 with 18 decimals).
-- Do not commit .env. Rotate keys if a secret was exposed.
-- Staging test asserts the live Chainlink feed address on Sepolia.
-- Solidity compilers: 0.8.28 (primary), 0.8.0 (for Chainlink interface compatibility).
+Withdraw (owner only):
+- ACTION=withdraw npx hardhat run scripts/Fund.js --network <NETWORK>
 
-SPDX-License-Identifier: SEE LICENSE IN LICENSE
+
+List funders:
+- ACTION=funders npx hardhat run scripts/Fund.js --network <NETWORK>
+
+Example output (info):
+Network: hardhat (chainId: 31337)
+Signer: 0x...
+FundMe address: 0xe7f1...
+Owner: 0x...
+Price Feed: 0x...
+Contract Balance: 0.002 ETH
+My Funded Amount: 0.001 ETH
+
+Troubleshooting:
+- “No deployed addresses found…”: Deploy with Ignition for that network first.
+- “FundMe address not found…”: Ensure you used ignition/modules/FundMe.js and the resulting file contains FundMeModuleV2#FundMe.
+
+## Tests
+
+- Unit (local): npx hardhat test
+- Coverage: npx hardhat coverage
+- Gas report: generated to gas-report.txt
+- Staging (Sepolia, optional): set .env and run tests with --network sepolia or run the staging spec directly after deployment.
